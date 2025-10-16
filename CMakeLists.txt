@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.0)
-cmake_policy(VERSION 3.0)
+cmake_minimum_required (VERSION 3.5)
+cmake_policy(VERSION 3.5)
 
 project(LearnOpenGL)
 
@@ -24,8 +24,19 @@ find_package(GLM REQUIRED)
 message(STATUS "GLM included at ${GLM_INCLUDE_DIR}")
 find_package(GLFW3 REQUIRED)
 message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
-find_package(ASSIMP REQUIRED)
-message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
+#find_package(ASSIMP REQUIRED)
+#message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
+# --- Assimp 찾기 (Homebrew 우선) ---
+find_package(assimp CONFIG QUIET)
+if (TARGET assimp::assimp)
+    # imported target 사용: 헤더/라이브러리 경로 자동 전파
+    list(APPEND LIBS assimp::assimp)
+else()
+    find_package(ASSIMP REQUIRED)  # 모듈 방식(백업)
+    list(APPEND LIBS ${ASSIMP_LIBRARY})
+    include_directories(${ASSIMP_INCLUDE_DIRS})
+endif()
+
 # find_package(SOIL REQUIRED)
 # message(STATUS "Found SOIL in ${SOIL_INCLUDE_DIR}")
 # find_package(GLEW REQUIRED)
@@ -69,6 +80,7 @@ set(CHAPTERS
     5.advanced_lighting
     6.pbr
     7.in_practice
+    9.HW
 )
 
 set(1.getting_started
@@ -173,6 +185,10 @@ set(7.in_practice
     #3.2d_game
 )
 
+set(9.HW
+    HW3
+)
+
 set(GUEST_ARTICLES
 	8.guest/2020/oit
 	8.guest/2020/skeletal_animation
@@ -192,10 +208,12 @@ configure_file(configuration/root_directory.h.in configuration/root_directory.h)
 include_directories(${CMAKE_BINARY_DIR}/configuration)
 
 # first create relevant static libraries required for other projects
-add_library(STB_IMAGE "src/stb_image.cpp")
+add_library(STB_IMAGE "src/stb_image.cpp"
+)
 set(LIBS ${LIBS} STB_IMAGE)
 
-add_library(GLAD "src/glad.c")
+add_library(GLAD "src/glad.c"
+)
 set(LIBS ${LIBS} GLAD)
 
 macro(makeLink src dest target)
